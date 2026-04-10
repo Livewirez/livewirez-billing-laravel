@@ -119,7 +119,7 @@ class Polar
         $environment = config('billing.providers.polar.environment');
 
         $api = config(
-            "payments.providers.polar.base_url.{$environment}",
+            "billing.providers.polar.base_url.{$environment}",
             app()->environment('production') ? 'https://api.polar.sh' : 'https://sandbox-api.polar.sh'
         );
 
@@ -155,7 +155,7 @@ class Polar
         $environment = config('billing.providers.polar.environment');
 
         $api = config(
-            "payments.providers.polar.base_url.{$environment}",
+            "billing.providers.polar.base_url.{$environment}",
             app()->environment('production') ? 'https://api.polar.sh' : 'https://sandbox-api.polar.sh'
         );
 
@@ -182,7 +182,7 @@ class Polar
         $environment = config('billing.providers.polar.environment');
 
         $api = config(
-            "payments.providers.polar.base_url.{$environment}",
+            "billing.providers.polar.base_url.{$environment}",
             app()->environment('production') ? 'https://api.polar.sh' : 'https://sandbox-api.polar.sh'
         );
 

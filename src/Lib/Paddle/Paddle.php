@@ -41,7 +41,7 @@ class Paddle
         $environment = config('billing.providers.paddle.environment');
 
         $api = config(
-            "payments.providers.paddle.base_url.{$environment}",
+            "billing.providers.paddle.base_url.{$environment}",
             app()->environment('production') ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com'
         );
         
@@ -77,7 +77,7 @@ class Paddle
         $environment = config('billing.providers.paddle.environment');
 
         $api = config(
-            "payments.providers.paddle.base_url.{$environment}",
+            "billing.providers.paddle.base_url.{$environment}",
             app()->environment('production') ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com'
         );
 
@@ -109,7 +109,7 @@ class Paddle
         $environment = config('billing.providers.paddle.environment');
 
         $api = config(
-            "payments.providers.paddle.base_url.{$environment}",
+            "billing.providers.paddle.base_url.{$environment}",
             app()->environment('production') ? 'https://api.paddle.com' : 'https://sandbox-api.paddle.com'
         );
 
