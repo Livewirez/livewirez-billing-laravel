@@ -1,0 +1,48 @@
+{
+    "name": "livewirez/livewirez-billing-laravel",
+    "description": "A laravel package for handling billing and their transactions.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Livewirez",
+            "email": "steve.mwenda@outlook.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Livewirez\\Billing\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Livewirez\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^8.2",
+        "archtechx/enums": "^1.1",
+        "tekord/php-result": "^0.9.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Livewirez\\Billing\\BillingServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require-dev": {
+        "phpunit/phpunit": "^12.2"
+    }
+}
