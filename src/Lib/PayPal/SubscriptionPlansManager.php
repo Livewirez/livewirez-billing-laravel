@@ -120,7 +120,7 @@ class SubscriptionPlansManager
     {
         $payload = [
             'name' => $product->getName(),
-            'description' => $product->getDescription() ?? 'No description provided',
+            'description' => $product->getDescription() ?? 'No description provided for this product',
             'type' => $product->getProductType()->name,
             'category' => $product->getProductCategory()->value,
             'image_url' => $product->getImageUrl(),
