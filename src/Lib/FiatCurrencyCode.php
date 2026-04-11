@@ -7,6 +7,7 @@ use Livewirez\Billing\Interfaces\CurrencyType;
 use Livewirez\Billing\Traits\CurrencyTypeTrait;
 
 /**
+ * 
  * @see https://www.iban.com/currency-codes
  * @see https://en.wikipedia.org/wiki/ISO_4217
  * @see https://www.iso.org/iso-4217-currency-codes.html
