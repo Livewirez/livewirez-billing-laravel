@@ -32,7 +32,7 @@ class Paddle
             ->filter(fn($value) => $value !== '' && $value !== [])
             ->toArray();
 
-        \Illuminate\Support\Facades\Log::debug('Polar API Request', [
+        \Illuminate\Support\Facades\Log::debug('Paddle API Request', [
             'method' => $method,
             'uri' => $uri,
             'payload' => $payload,
@@ -42,7 +42,7 @@ class Paddle
 
         $api = config(
             "billing.providers.paddle.base_url.{$environment}",
-            app()->environment('production') ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com'
+            app()->environment('production') ? 'https://api.paddle.com' : 'https://sandbox-api.paddle.com'
         );
         
         $pendingRequest = Http::withToken($apiKey)
