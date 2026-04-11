@@ -608,6 +608,68 @@ class SubscriptionsManager implements ResolvesPaymentProvider
                     $events[] = EventEnum::Upgrade;
                     break;
 
+                case SubscriptionTransactionType::Downgrade:
+                     $subscription = $subscriptionContext->existingSubscription;
+
+                    $previousPlan = $subscriptionContext->currentPlan;
+                    $previousPlanPrice = $subscriptionContext->currentPlanPrice;
+
+                    $plan = $newPlan = $subscriptionContext->plan;
+                    $planPice = $newPlanPrice = $subscriptionContext->price;
+
+                    $total_days = $subscription->ends_at->diffInDays($subscription->starts_at, true); 
+                    $remaining_days = $subscription->ends_at->diffInDays(now(), true);
+
+                    if ($newPlanPrice->interval !== $previousPlanPrice->interval) {
+                        $substitutedPrice = $previousPlan->billing_plan_prices()->where('interval', $newPlanPrice->interval)->first();
+
+                        $finalPrice = round(
+                            (($newPlanPrice->amount - $substitutedPrice->amount) * ($remaining_days / $total_days)),
+                            0
+                        );
+                    } else {
+
+                        $finalPrice = round(
+                            (($newPlanPrice->amount - $previousPlanPrice->amount) * ($remaining_days / $total_days)),
+                            0
+                        );
+                    }
+
+                    $subscription_transaction = $subscription->billing_subscription_transactions()->create([
+                        'from_billing_plan_id' => $previousPlan->id,
+                        'from_billing_plan_price_id' => $previousPlanPrice->id,
+                        'billing_plan_id' => $newPlan->id,
+                        'billing_plan_price_id' => $newPlanPrice->id,
+                        'billing_plan_name' => $newPlan->name,
+                        'transaction_ref' => $order->order_number,
+                        'type' => $subscriptionContext->type,
+                        'payment_provider' => $paymentProvider,
+                        'amount' => $finalPrice,
+                        'currency' => $newPlanPrice->currency,
+                        'interval' => $newPlanPrice->interval,
+                        'scale' => $newPlanPrice->scale,
+                        'status' => SubscriptionTransactionStatus::PENDING,
+                        'payment_status' => PaymentStatus::PENDING,
+                        'metadata' => $metadata,
+                    ]);
+
+                    $payment_transaction = $user->billing_payment_transactions()->create([
+                        'action_type' => ActionType::MODIFY,
+                        'billing_payment_transaction_id' => Str::uuid(),
+                        'type' => PaymentTransactionType::SUBSCRIPTION,
+                        'status' => PaymentTransactionStatus::PENDING,
+                        'total_amount' => $finalPrice,
+                        'currency' => $newPlanPrice->currency,
+                        'payment_provider' => $paymentProvider,
+                        'metadata' => $metadata,
+                    ]);
+
+                    $payment_transaction->billing_order()->associate($order);
+                    $payment_transaction->billing_subscription()->associate($subscription);
+                    $payment_transaction->save();
+
+                    $events[] = EventEnum::Downgrade;
+                    break;
                 case SubscriptionTransactionType::PriceIncrease:
                     $subscription = $subscriptionContext->existingSubscription;
 
