@@ -69,9 +69,9 @@ class BillingCartWrapper implements CartInterface
         $cart->update(['currency' => $oldCart->getCurrencyCode()]);
 
         $instance = new static($cart);
-        $instance->fill($oldCart->all());
+       // $instance->fill($oldCart->all());
 
-        return $instance;
+        return $instance->fill($oldCart->all());
     }
 
     public static function fromCartItem(CartItemInterface $cart_item): static
@@ -254,10 +254,22 @@ class BillingCartWrapper implements CartInterface
 
     public function getAttributes(): array
     {
-        return $this->cart->billing_cart_items->map(fn(BillingCartItem $it) => [
-            'product' => $it->billing_product,
-            'quantity' => $it->quantity
-        ])->toArray();
+        return [
+            'billing_cart_items' => $this->cart->billing_cart_items->map(fn(BillingCartItem $it) => [
+                'product' => $it->billing_product,
+                'quantity' => $it->quantity
+            ])->toArray(),
+            'id' => $this->cart->id,
+            'currency' => $this->cart->currency,
+            'total' => $this->cart->total,
+            'subtotal' => $this->cart->subtotal,
+            'tax' => $this->cart->tax,
+            'discount' => $this->cart->discount,
+            'shipping' => $this->cart->shipping,
+            'shipping_discount' => $this->cart->shipping_discount,
+            'handling' => $this->cart->handling,
+            'insurance' => $this->cart->insurance,
+        ];
     }
 
     public function toArray(): array
