@@ -138,4 +138,21 @@ class CheckoutDetails
 
         return $this;
     }
+
+    public static function fromArray(array $data): static
+    {
+        return new static(
+            billingPaymentTransaction: \Livewirez\Billing\Billing::$billingPaymentTransaction::findOrFail($data['billingPaymentTransaction']['id']),
+            billingOrder: isset($data['billingOrder'])
+                ? \Livewirez\Billing\Billing::$billingOrder::findOrFail($data['billingOrder']['id'])
+                : null,
+            billingOrderItems: isset($data['billingOrderItems'])
+                ? collect($data['billingOrderItems'])->map(fn (array $item) => \Livewirez\Billing\Billing::$billingOrderItem::findOrFail($item['id']))
+                : null,
+            billingSubscription: isset($data['billingSubscription'])
+                ? \Livewirez\Billing\Billing::$billingSubscription::findOrFail($data['billingSubscription']['id'])
+                : null,
+            checkoutUrl: $data['checkoutUrl'] ?? null
+        );
+    }
 }
