@@ -249,7 +249,7 @@ class PaypalHttpProvider implements PaymentProviderInterface
     {
         $paymentData = [
             'billing_order_id' => $request->getBillingOrderId(),
-            'billing_payment_transaction_id' => $request->getBillingPaymenTransactionId(),
+            'billing_payment_transaction_id' => $request->getBillingPaymentTransactionId(),
             'order_number' => $request->getOrderNumber(),
             'product_type' =>  $request->getProductType()->value,
         ];

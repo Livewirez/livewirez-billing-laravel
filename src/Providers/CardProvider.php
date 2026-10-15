@@ -50,7 +50,7 @@ class CardProvider implements PaymentProviderInterface
 
         $paymentData = [
             'billing_order_id' => $billingOrderId =  $request->getBillingOrderId(),
-            'billing_payment_transaction_id' => $request->getBillingPaymenTransactionId(),
+            'billing_payment_transaction_id' => $request->getBillingPaymentTransactionId(),
             'order_number' => $request->getOrderNumber(),
             'product_type' =>  $request->getProductType()->value,
             'billable_id' => $request->getUser()->getKey(),

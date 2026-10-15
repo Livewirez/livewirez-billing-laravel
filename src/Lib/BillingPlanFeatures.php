@@ -31,7 +31,7 @@ class BillingPlanFeatures implements JsonSerializable
         return $this->attributes[$key] ?? null;
     }
 
-    public function __set(string $key, $value): void
+    public function __set(string $key, mixed $value): void
     {
         $this->attributes[$key] = $value;
     }

@@ -15,8 +15,8 @@ class BillableAddress extends Model
 {
     protected static function booted(): void
     {
-        static::saving(static function (self $subscription) {
-            $subscription->billable_key = "{$subscription->billable_type}:{$subscription->billable_id}";
+        static::saving(static function (self $address) {
+            $address->billable_key = "{$address->billable_type}:{$address->billable_id}";
         });
     }
 

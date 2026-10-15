@@ -9,6 +9,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class HandleWebhooksController
 {
+    public function handleCybersourceWebhooks(Request $request, HandleWebhooks $action): Response
+    {
+        return $action->handle($request, PaymentProvider::Cybersource);
+    }
+
     public function handlePolarWebhooks(Request $request, HandleWebhooks $action): Response
     {
         return $action->handle($request, PaymentProvider::Polar);

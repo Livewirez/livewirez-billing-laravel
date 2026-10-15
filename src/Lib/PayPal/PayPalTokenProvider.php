@@ -521,7 +521,7 @@ class PayPalTokenProvider implements TokenizedPaymentProviderInterface
                             ]
                         );
                     } catch (Throwable $th) {
-                        \Illuminate\Support\Facades\Log::error('Error trasforming COMPLETED status to Transaction Interface', ['PaypalHttp::capturePayment']);
+                        \Illuminate\Support\Facades\Log::error('Error transforming COMPLETED status to Transaction Interface', ['PaypalHttp::capturePayment']);
 
                         return new PaymentResult(
                             false,
@@ -863,7 +863,7 @@ class PayPalTokenProvider implements TokenizedPaymentProviderInterface
                             true
                         );
                     } catch (Throwable $th) {
-                        \Illuminate\Support\Facades\Log::error('Error trasforming COMPLETED status to Transaction Interface', ['PaypalHttp::capturePayment']);
+                        \Illuminate\Support\Facades\Log::error('Error transforming COMPLETED status to Transaction Interface', ['PaypalHttp::capturePayment']);
 
                         return new SubscriptionResult(
                             false,

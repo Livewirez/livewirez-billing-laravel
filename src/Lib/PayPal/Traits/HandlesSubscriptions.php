@@ -48,7 +48,7 @@ trait HandlesSubscriptions
     {
         $subscriptionData = [
             'billing_order_id' => $request->getBillingOrderId(),
-            'billing_payment_transaction_id' => $request->getBillingPaymenTransactionId(),
+            'billing_payment_transaction_id' => $request->getBillingPaymentTransactionId(),
             'order_number' => $request->getOrderNumber(),
             'billing_subscription_id' => $billingSubscriptionId = $request->getBillingSubscriptionId(),
             'product_type' =>  $request->getProductType()->value,

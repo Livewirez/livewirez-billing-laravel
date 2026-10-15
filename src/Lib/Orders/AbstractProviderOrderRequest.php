@@ -22,7 +22,7 @@ abstract class AbstractProviderOrderRequest
     public function __construct(
         public Billable $user,
         public string $billingOrderId,
-        public string $billingPaymenTransactionId,
+        public string $billingPaymentTransactionId,
         public string $orderNumber,
         public ?string $providerOrderId = null,
         public ?string $providerCheckoutId = null,
@@ -50,9 +50,9 @@ abstract class AbstractProviderOrderRequest
         return $this->billingOrderId;
     }
 
-    public function getBillingPaymenTransactionId(): string 
+    public function getBillingPaymentTransactionId(): string 
     {
-        return $this->billingPaymenTransactionId;
+        return $this->billingPaymentTransactionId;
     }
 
     public function getOrderNumber(): string 
@@ -152,7 +152,7 @@ abstract class AbstractProviderOrderRequest
         $instance = new static(
             user: $data['billable'] ?? $data['user'],
             billingOrderId: $data['billingOrderId'] ?? $data['billing_order_id'],
-            billingPaymenTransactionId: $data['billingPaymenTransactionId'] ?? $data['billing_payment_transaction_id'],
+            billingPaymentTransactionId: $data['billingPaymentTransactionId'] ?? $data['billing_payment_transaction_id'],
             orderNumber: $data['orderNumber'] ?? $data['order_number'],
             providerOrderId: $data['providerOrderId'] ?? $data['provider_order_id'] ?? $data['payment_provider_order_id'] ?? null,
             providerCheckoutId: $data['providerCheckoutId'] ?? $data['provider_checkout_id'] ?? $data['payment_provider_checkout_id'] ?? null,
@@ -173,7 +173,7 @@ abstract class AbstractProviderOrderRequest
         $constructorArrayKeys = [
             'billable', 'user',
             'billingOrderId', 'billing_order_id',
-            'billingPaymenTransactionId', 'billing_payment_transaction_id',
+            'billingPaymentTransactionId', 'billing_payment_transaction_id',
             'orderNumber', 'order_number', 'providerOrderId', 'provider_order_id',
             'payment_provider_order_id', 'providerCheckoutId', 'provider_checkout_id',
             'payment_provider_checkout_id', 'providerTransactionId', 'provider_transaction_id',
@@ -199,7 +199,7 @@ abstract class AbstractProviderOrderRequest
     public static function make(
         Billable $user,
         string $billingOrderId,
-        string $billingPaymenTransactionId,
+        string $billingPaymentTransactionId,
         string $orderNumber,
         ?string $providerOrderId = null,
         ?string $providerCheckoutId = null,
@@ -212,7 +212,7 @@ abstract class AbstractProviderOrderRequest
     ): static {
         return new static(
             $user, $billingOrderId,
-            $billingPaymenTransactionId, 
+            $billingPaymentTransactionId, 
             $orderNumber, $providerOrderId,
             $providerCheckoutId, $providerTransactionId,
             $billingSubscriptionId, $providerSubscriptionId, 

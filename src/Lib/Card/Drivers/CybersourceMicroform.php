@@ -154,7 +154,7 @@ class CybersourceMicroform implements PaymentDriver
         return $this->makeRequest(RequestMethod::Post, $uri, $payload);
     }
 
-    public function tryCapurePayment(string $transactionId, array $payload = []): Response
+    public function tryCapturePayment(string $transactionId, array $payload = []): Response
     {
         $uri = "/pefs/v1/followons/{$transactionId}/capture";
 
@@ -168,7 +168,7 @@ class CybersourceMicroform implements PaymentDriver
         ]);
     }
 
-    public function capurePayment(string $transactionId, array $payload = []): Response
+    public function capturePayment(string $transactionId, array $payload = []): Response
     {
         $uri = "/pts/v2/payments/{$transactionId}/captures";
 

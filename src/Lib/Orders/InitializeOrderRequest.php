@@ -18,7 +18,7 @@ class InitializeOrderRequest
     public function __construct(
         public Billable $user,
         public string $billingOrderId,
-        public string $billingPaymenTransactionId,
+        public string $billingPaymentTransactionId,
         public string $orderNumber,
         public int $amount,
         public string $currency,
@@ -53,9 +53,9 @@ class InitializeOrderRequest
         return $this->billingOrderId;
     }
 
-    public function getBillingPaymenTransactionId(): string 
+    public function getBillingPaymentTransactionId(): string 
     {
-        return $this->billingPaymenTransactionId;
+        return $this->billingPaymentTransactionId;
     }
 
     public function getOrderNumber(): string 
@@ -155,7 +155,7 @@ class InitializeOrderRequest
         $instance = new static(
             user: $data['billable'] ?? $data['user'],
             billingOrderId: $data['billingOrderId'] ?? $data['billing_order_id'],
-            billingPaymenTransactionId: $data['billingPaymenTransactionId'] ?? $data['billing_payment_transaction_id'],
+            billingPaymentTransactionId: $data['billingPaymentTransactionId'] ?? $data['billing_payment_transaction_id'],
             orderNumber: $data['orderNumber'] ?? $data['order_number'],
             amount: $data['amount'],
             currency: $data['currency'],
@@ -176,7 +176,7 @@ class InitializeOrderRequest
         $constructorArrayKeys = [
             'billable', 'user',
             'billingOrderId', 'billing_order_id',
-            'billingPaymenTransactionId', 'billing_payment_transaction_id',
+            'billingPaymentTransactionId', 'billing_payment_transaction_id',
             'orderNumber', 'order_number', 'amount', 'currency',
             'data', 'metadata', 'billingSubscriptionId', 'billing_subscription_id',
             'billingSubscriptionTransactionId', 'billing_subscription_transaction_id',
@@ -200,7 +200,7 @@ class InitializeOrderRequest
     public static function make(
         Billable $user,
         string $billingOrderId,
-        string $billingPaymenTransactionId,
+        string $billingPaymentTransactionId,
         string $orderNumber,
         int $amount,
         string $currency,
@@ -213,7 +213,7 @@ class InitializeOrderRequest
     ): static {
         return new static(
             $user, $billingOrderId,
-            $billingPaymenTransactionId, 
+            $billingPaymentTransactionId, 
             $orderNumber, $amount, $currency,
             $metadata, $billingSubscriptionId,
             $billingSubscriptionTransactionId, 

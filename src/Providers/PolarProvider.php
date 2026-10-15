@@ -104,7 +104,7 @@ class PolarProvider implements PaymentProviderInterface
 
         $paymentData = [
             'billing_order_id' => $request->getBillingOrderId(),
-            'billing_payment_transaction_id' => $request->getBillingPaymenTransactionId(),
+            'billing_payment_transaction_id' => $request->getBillingPaymentTransactionId(),
             'order_number' => $request->getOrderNumber(),
             'product_type' =>  $request->getProductType()->value,
             'billable_id' => $request->getUser()->getKey(),
@@ -341,7 +341,7 @@ class PolarProvider implements PaymentProviderInterface
     {
         $subscriptionData = [
             'billing_order_id' => $request->getBillingOrderId(),
-            'billing_payment_transaction_id' => $request->getBillingPaymenTransactionId(),
+            'billing_payment_transaction_id' => $request->getBillingPaymentTransactionId(),
             'order_number' => $request->getOrderNumber(),
             'billing_subscription_id' => $billingSubscriptionId = $request->getBillingSubscriptionId(),
             'billing_subscription_transaction_id' => $billingSubscriptionTransactionId = $request->getBillingSubscriptionTransactionId(),

@@ -77,11 +77,11 @@ class PayPalProvider implements PaymentProviderInterface
 
     public function __construct(array $config = [])
     {
-        $this->__constructSubscriptionsManager();
+        \Illuminate\Support\Facades\Log::info(__CLASS__ . ' Config', $config);
 
-        \Illuminate\Support\Facades\Log::info(collect($config), ['cONFIG']);
-        
         $this->config = $config !== [] ? $config : config('billing.providers.paypal');
+
+       
 
         $this->client = PaypalServerSdkClientBuilder::init()
         ->clientCredentialsAuthCredentials(
@@ -99,7 +99,8 @@ class PayPalProvider implements PaymentProviderInterface
         )
         ->build();
 
-        $this->initializeSubscriptionsManager();
+        // $this->initializeSubscriptionsManager();
+        $this->__constructSubscriptionsManager();
     }
 
     public function getTokenPaymentProvider(): TokenizedPaymentProviderInterface
@@ -281,7 +282,7 @@ class PayPalProvider implements PaymentProviderInterface
 
                 $paymentData = [
                     'billing_order_id' => $request->getBillingOrderId(),
-                    'billing_payment_transaction_id' => $request->getBillingPaymenTransactionId(),
+                    'billing_payment_transaction_id' => $request->getBillingPaymentTransactionId(),
                     'order_number' => $request->getOrderNumber(),
                     'product_type' =>  $request->getProductType()->value,
                 ];

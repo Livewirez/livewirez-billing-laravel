@@ -51,10 +51,10 @@ class BillingCartWrapper implements CartInterface
 
     public function getCurrencyType(): CurrencyType
     {
-        if (CurrencyCode::from($this->getCurrencyCode())->isFiat())
+        if (CurrencyCode::tryFrom($this->getCurrencyCode())?->isFiat())
             return CurrencyType::FIAT;
 
-        if (CurrencyCode::from($this->getCurrencyCode())->isCrypto())
+        if (CurrencyCode::tryFrom($this->getCurrencyCode())?->isCrypto())
             return CurrencyType::CRYPTO;
 
         throw new DomainException('Unsupported Currency Type');

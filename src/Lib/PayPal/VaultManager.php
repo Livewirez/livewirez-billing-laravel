@@ -81,6 +81,8 @@ class VaultManager
         array $data = []
     ): Response
     {
+        $body = [];
+
         switch($vaultUsagePattern) {
             case VaultUsagePattern::IMMEDIATE:
                 // Handle immediate case
@@ -100,7 +102,8 @@ class VaultManager
                 ];
                 break;
             case VaultUsagePattern::DEFERRED:
-                // Handle deferred case
+                // Handle deferred case 
+                $body = [];
                 break;
             // Add other cases as needed
             /** 

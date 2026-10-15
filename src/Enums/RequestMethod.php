@@ -40,18 +40,18 @@ enum RequestMethod: string
     public static function fromString(string $method): static 
     {
         return match (strtoupper($method)) {
-            'GET' => self::Get,
-            'PUT' => self::Put,
-            'PATCH' => self::Patch,
-            'POST' => self::Post,
-            'DELETE' => self::Delete,
-            'HEAD' => self::Head,
+            'GET'     => self::Get,
+            'PUT'     => self::Put,
+            'PATCH'   => self::Patch,
+            'POST'    => self::Post,
+            'DELETE'  => self::Delete,
+            'HEAD'    => self::Head,
             'OPTIONS' => self::Options,
-            'TRACE' => self::Trace,
-            'QUERY' => self::Query,
+            'TRACE'   => self::Trace,
+            'QUERY'   => self::Query,
             'CONNECT' => self::Connect,
-            'PURGE' => self::Purge,
-            default => throw new InvalidArgumentException('Unsupported Request Method')
+            'PURGE'   => self::Purge,
+            default   => throw new InvalidArgumentException('Unsupported Request Method')
         };
     }
 }
