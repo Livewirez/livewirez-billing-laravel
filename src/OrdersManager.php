@@ -256,6 +256,193 @@ class OrdersManager implements ResolvesPaymentProvider
         }); 
     }
 
+    public function initializeOrder(
+        Billable $user,
+        PaymentProvider|string $paymentProvider,
+        CartInterface $cart,
+        array $paymentData = [],
+        array $metadata = []
+    ): InitializeOrderRequest {
+        return DB::transaction(function (Connection $conn) use ($user, $paymentProvider, $cart, $paymentData, $metadata): InitializeOrderRequest {
+
+            $metadata = array_merge($metadata, ['cart' => $cart->toArray()]);
+            $paymentProviderValue = $this->resolveProviderValue($paymentProvider);
+
+            $provider = $this->provider($paymentProviderValue);
+
+            $order = $user->billing_orders()->create([
+                'billing_order_id' => Str::uuid(),
+                'order_number' => BillingOrder::generateOrderNumber(),
+                'status' => OrderStatus::PENDING,
+                'currency' => $currency = $cart->getCurrencyCode(),
+                'subtotal' => $cart->getItemTotals(false),
+                'discount' => $cart->getDiscountTotal(),
+                'tax' => $cart->getItemTaxTotals(),
+                'shipping' => $cart->getShippingTotal() + $cart->getHandlingTotal(),
+                'total' => $total_amount = $cart->getGrandTotalFromExtraTax(
+                    true,
+                    config("billing.providers.{$paymentProviderValue}.extra_tax", 0)
+                ),
+                'type' => 'one_time',
+                'payment_status' => PaymentStatus::UNPAID,
+                'payment_provider'  => $paymentProvider, // 'paypal', 'stripe', 'mpesa', etc.
+                'sub_payment_provider' => match ($paymentProviderValue) {
+                    'card' => $paymentData['card_gateway'] ?? null,
+                    default => null
+                },
+                'delivery_status' => DeliveryStatus::AWAITING_PROCESSING,
+                'fulfillment_status' => FulfillmentStatus::AWAITING_PROCESSING,
+                'metadata' => $metadata
+            ]);
+
+            $order_items = collect($cart->all())->map(function (CartItemInterface&OrderCalculatableInterface $cartItem) use ($order, $paymentProviderValue, $metadata) {
+
+                return $order->billing_order_items()->create([
+                    'billing_product_id' => $cartItem->getProduct()->getId(),
+                    'name' => $cartItem->getProduct()->getName(),
+                    'price' => $cartItem->getProduct()->getListedPrice(),
+                    'thumbnail' => $cartItem->getProduct()->getImageUrl(),
+                    'url' => $cartItem->getProduct()->getUrl(),
+                    'quantity' => $cartItem->getQuantity(),
+                    'currency' => $cartItem->getCurrencyCode(),
+                    'subtotal' => $cartItem->getItemTotals(true), // before tax & shipping
+                    'discount' => $cartItem->getDiscountTotal(),
+                    'tax' => $cartItem->getItemTaxTotals(),
+                    'shipping' => $cartItem->getShippingTotal() + $cartItem->getHandlingTotal(),
+                    'total' => $total_amount = $cartItem->getGrandTotalFromExtraTax(
+                        true,
+                        config("billing.providers.{$paymentProviderValue}.extra_tax", 0)
+                    ),
+                    'type' => $cartItem->getProduct()->getProductType() === ProductType::SERVICE ? 'recurring' : 'one-time',
+                    'status' => OrderStatus::PENDING,
+                    'payment_status' => PaymentStatus::UNPAID,
+                    'delivery_status' => DeliveryStatus::AWAITING_PROCESSING,
+                    'fulfillment_status' => FulfillmentStatus::AWAITING_PROCESSING,
+                    'metadata' => $metadata,
+                ]); 
+
+            });
+
+
+            $payment_transaction = $user->billing_payment_transactions()->create([
+                'billing_payment_transaction_id' => Str::uuid(),
+                'action_type' => ActionType::CREATE,
+                'type' => PaymentTransactionType::PAYMENT,
+                'status' => PaymentTransactionStatus::PENDING,
+                'total_amount' => $total_amount, 
+                'currency' => $currency,
+                'payment_provider' => $paymentProviderValue,
+                'metadata' => $metadata,
+            ]);
+
+            
+            $payment_transaction->billing_order()->associate($order);
+            $payment_transaction->save();
+
+            \Illuminate\Support\Facades\Log::debug('Saved Payment Transaction', [
+                'payment_transaction_id' => $payment_transaction->billing_payment_transaction_id,
+                'order_id' => $order->billing_order_id,
+                'user_id' => $user->getKey(),
+            ]);
+
+            $syncData = collect($cart->all())
+                ->mapWithKeys(fn (CartItemInterface $item) => [
+                    $item->getProduct()->getId() => ['quantity' => $item->getQuantity()]
+                ])->toArray();
+
+            $order->billing_products()->sync($syncData, false);
+    
+            $providerData = array_merge($paymentData, [
+                'user' => $user,
+                'billing_order_id' => $order->billing_order_id,
+                'billing_payment_transaction_id' => $payment_transaction->billing_payment_transaction_id,
+                'order_number' => $order->order_number,
+                'product_type' => ApiProductTypeKey::ONE_TIME->value,
+                'amount' => $total_amount,
+                'currency' => $currency,
+                'metadata' => array_merge($metadata, $paymentData)
+            ]);
+    
+            return InitializeOrderRequest::fromArray($providerData);
+        });    
+    }
+
+    public function resumeOrder(
+        Billable $user,
+        PaymentProvider|string $paymentProvider,
+        CartInterface $cart,
+        InitializeOrderRequest $request,
+        array $metadata = []
+    ): PaymentResult {
+        return DB::transaction(function (Connection $conn) use ($user, $paymentProvider, $cart, $request, $metadata): PaymentResult {
+
+            $paymentProviderValue = $this->resolveProviderValue($paymentProvider);
+            $provider = $this->provider($paymentProviderValue);
+            $result = $provider->initializePayment($cart, $request);
+
+            \Illuminate\Support\Facades\Log::info(__METHOD__ . ' CompletePayment Result', [
+                'result' => $result,
+                'metadata' => $result->metadata
+            ]);
+
+            if (!$result->success && $result->throw) throw new PaymentInitiationException($result);
+
+            $order = Billing::$billingOrder::with([
+                'billing_payment_transaction', 'billing_order_items'
+            ])->where('billing_order_id', $request->getBillingOrderId())->firstOrFail();
+
+            $order_items = $order->billing_order_items;
+            $payment_transaction = $order->billing_payment_transaction;
+
+            $order->update([
+                'payment_provider_checkout_id' => $result->providerCheckoutId,
+                'payment_provider_order_id' => $result->providerOrderId,
+                'payment_provider_transaction_id' => $result->providerTransactionId,
+                'status' => $order_status = match ($result->status) {
+                    PaymentStatus::PENDING => OrderStatus::PENDING,
+                    PaymentStatus::FAILED => OrderStatus::FAILED,
+                    PaymentStatus::APPROVED => OrderStatus::PROCESSED,
+                    PaymentStatus::COMPLETED => OrderStatus::COMPLETED,
+                    PaymentStatus::PAID => OrderStatus::AWAITING_PROCESSING,
+                },
+                'payment_status' => $result->status,
+                'metadata' =>  array_merge($metadata, ['initiate_payment' => $result->metadata ?? []])
+            ]);
+
+            $order_items->each(fn (BillingOrderItem $order_item) => $order_item->update([
+                'status' => $order_status,
+                'payment_status' => $result->status,
+                'processed_at' => now(),
+                'metadata' =>  array_merge($order_item->metadata, ['initiate_payment' => $result->metadata ?? []])
+            ]));
+
+            $payment_transaction->update([
+                'payment_provider_transaction_id' => $result->providerTransactionId,
+                'payment_provider_checkout_id' => $result->providerCheckoutId,
+                'status' => match ($result->status) {
+                    PaymentStatus::PENDING => PaymentTransactionStatus::PENDING,
+                    PaymentStatus::FAILED => PaymentTransactionStatus::FAILED,
+                    PaymentStatus::APPROVED => PaymentTransactionStatus::APPROVED,
+                    PaymentStatus::COMPLETED => PaymentTransactionStatus::COMPLETED,
+                    PaymentStatus::PAID => PaymentTransactionStatus::PAID,
+                },
+                'metadata' => array_merge($metadata, ['initiate_payment' => $result->metadata ?? []])
+            ]);
+
+            event(new PaymentInitiated($order, $payment_transaction));
+    
+            return $result->setCheckoutDetails(
+                new CheckoutDetails(
+                    $payment_transaction,
+                    $order,
+                    $order_items,
+                    checkoutUrl: $result->getCheckoutUrl()
+                )
+            );
+            
+        });
+    }
+
     public function initializePayment(
         Billable $user,
         PaymentProvider|string $paymentProvider,
@@ -366,7 +553,7 @@ class OrdersManager implements ResolvesPaymentProvider
     
             $result = $provider->initializePayment($cart, InitializeOrderRequest::fromArray($providerData));
 
-             \Illuminate\Support\Facades\Log::info(__METHOD__ . ' CompletePayment Result', [
+            \Illuminate\Support\Facades\Log::info(__METHOD__ . ' CompletePayment Result', [
                 'result' => $result,
                 'metadata' => $result->metadata
             ]);
