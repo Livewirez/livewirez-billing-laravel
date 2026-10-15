@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use Livewirez\Billing\Lib\Address;
 use Livewirez\Billing\Interfaces\Billable;
 use Livewirez\Billing\Enums\ApiProductTypeKey;
+use function Livewirez\Billing\deep_merge_array;
 
 use function count;
 use function is_array;
@@ -78,6 +79,13 @@ abstract class AbstractProviderOrderRequest
     public function getMetadata(): array 
     {
         return $this->metadata;
+    }
+
+    public function addMetadata(array $add): static 
+    {
+        $this->metadata = deep_merge_array($this->metadata, $add);
+
+        return $this;
     }
 
     public function getBillingSubscriptionId(): ?string

@@ -360,7 +360,11 @@ class OrdersManager implements ResolvesPaymentProvider
                 'product_type' => ApiProductTypeKey::ONE_TIME->value,
                 'amount' => $total_amount,
                 'currency' => $currency,
-                'metadata' => array_merge($metadata, $paymentData)
+                'metadata' => array_merge($metadata, $paymentData, ['checkout_details' => new CheckoutDetails(
+                    $payment_transaction,
+                    $order,
+                    $order_items,
+                )])
             ]);
     
             return InitializeOrderRequest::fromArray($providerData);
@@ -378,7 +382,7 @@ class OrdersManager implements ResolvesPaymentProvider
 
             $paymentProviderValue = $this->resolveProviderValue($paymentProvider);
             $provider = $this->provider($paymentProviderValue);
-            $result = $provider->initializePayment($cart, $request);
+            $result = $provider->initializePayment($cart, $request->addMetadata($metadata));
 
             \Illuminate\Support\Facades\Log::info(__METHOD__ . ' CompletePayment Result', [
                 'result' => $result,

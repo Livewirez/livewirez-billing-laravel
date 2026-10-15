@@ -49,6 +49,23 @@ if (!function_exists('exception_info')) {
     }
 }
 
+if(! function_exists('deep_merge_array')) {
+    function deep_merge_array(array $array1, array ...$arrays): array 
+    {
+        return array_reduce($arrays, function (array $carry, array $next) {
+            foreach ($next as $key => $value) {
+                if (isset($carry[$key]) && is_array($carry[$key]) && is_array($value)) {
+                    $carry[$key] = deep_merge_array($carry[$key], $value);
+                } else {
+                    $carry[$key] = $value;
+                }
+            }
+            return $carry;
+        }, $array1);
+    }
+
+}
+
 if(! function_exists('make_request_using_curl')) {
     function make_request_using_curl(string $url, array $data = [], array $curl_options = [], string $method = 'POST', bool $laravel_response = false): mixed
     {
